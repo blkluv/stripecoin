@@ -9,7 +9,7 @@ export default function Page() {
                 <div className="grid gap-4 sm:grid-cols-2">
                     <a href="/checkout" className="rounded-2xl border border-slate-700 p-6 hover:bg-slate-900">
                         <h3 className="text-xl font-semibold">Pay with Crypto (USDC)</h3>
-                        <p className="text-slate-400">Stripe Checkout with payment_method_types=["crypto"].</p>
+                        <p className="text-slate-400">Stripe Checkout with Crypto.</p>
                     </a>
                     <a href="/onramp" className="rounded-2xl border border-slate-700 p-6 hover:bg-slate-900">
                         <h3 className="text-xl font-semibold">Fiat → Crypto Onramp</h3>

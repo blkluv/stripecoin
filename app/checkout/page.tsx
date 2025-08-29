@@ -30,7 +30,7 @@ export default function CheckoutPage() {
     return (
         <main className="max-w-xl mx-auto p-6">
             <h1 className="text-3xl font-bold mb-4">Checkout: Pay with Crypto</h1>
-            <p className="text-slate-500 mb-6">This demo uses Stripe Checkout with <code>payment_method_types=["crypto"]</code>. Amounts must be in USD.</p>
+            <p className="text-slate-500 mb-6">This demo uses Stripe Checkout with <code>payment_method_types=[&quot;crypto&quot;]</code>. Amounts must be in USD.</p>
             <button onClick={startCheckout} disabled={loading} className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20">
                 {loading ? "Redirecting…" : "Pay $20 in USDC"}
             </button>

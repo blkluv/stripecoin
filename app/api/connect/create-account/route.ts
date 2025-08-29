@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { stripe, idempotencyKey } from "@/lib/stripe";
 
 
-export async function POST() {
+export async function POST(req: NextRequest) {
     const account = await stripe.accounts.create({
         type: "express",
         country: "US",

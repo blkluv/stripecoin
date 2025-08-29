@@ -1,9 +1,18 @@
 "use client"
 import { useState, useEffect } from "react";
 
+type Quote = {
+  id: string;
+  destination_network: string;
+  destination_currency: string;
+  destination_amount: string;
+  // add these if you decide to render them later:
+  // source_total_amount: string;
+  // fees: Record<string, unknown> | null;
+};
 
 export default function OnrampPage() {
-    const [quotes, setQuotes] = useState<any[]>([]);
+    const [quotes, setQuotes] = useState<Quote[]>([]);
 
 
     useEffect(() => {
