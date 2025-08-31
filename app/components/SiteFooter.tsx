@@ -7,7 +7,7 @@ export default function SiteFooter() {
             <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-6 py-8 md:flex-row">
                 <div className="flex items-center gap-3 text-white/70">
                     <LogoMark small />
-                    <span className="text-sm">Built with Next.js • Tailwind • Stripe</span>
+                    <span className="text-sm">Built with Next.js • Tailwind • Stripe • By Gunner Howe</span>
                 </div>
                 <div className="flex flex-wrap items-center gap-3 text-sm text-white/60">
                     <Tag>USDC</Tag>
