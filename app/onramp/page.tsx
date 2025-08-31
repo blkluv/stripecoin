@@ -1,38 +1,32 @@
-// /app/onramp/page.tsx
+// ====================================================================
+// 1) app/onramp/page.tsx — MOBILE FIXES + ACTION HOOKS
+//    - Fixes sticky bar overflow on small screens (chips scroll, min-w-0, truncation)
+//    - Long IDs wrap/truncate
+//    - Buttons now route to /onramp/confirm with the selected quote details
+// ====================================================================
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
-/**
- * On‑Ramp Showcase Page
- * — Polished UI for requesting quotes and previewing fee breakdowns
- * — Zero extra deps (Tailwind only)
- * — Gracefully falls back to mock quotes if your API is not wired yet
- *
- * If you already have a server route that fetches quotes from Stripe,
- * set API_PATH below to that route (e.g., "/api/onramp/quotes").
- * Otherwise, keep the default and the page will demo with mock data.
- */
-const API_PATH = "/api/onramp/quotes"; // change if you use a different endpoint
-
-/* =============================== Types =============================== */
+// ---- Types ----
 
 type Fees = {
-  network_fee_monetary?: string; // e.g. "4.58"
-  transaction_fee_monetary?: string; // e.g. "2.13"
+  network_fee_monetary?: string;
+  transaction_fee_monetary?: string;
 } | null;
 
 export type Quote = {
   id: string;
-  destination_network: string; // "ethereum" | "solana" | "xrpl" | ...
-  destination_currency: string; // "usdc" | "eth" | "rlusd" | ...
-  destination_amount: string; // e.g. "200.00"
-  source_total_amount: string; // e.g. "212.71" (includes fees)
+  destination_network: string;
+  destination_currency: string;
+  destination_amount: string;
+  source_total_amount: string;
   fees: Fees;
 };
 
-/* ============================== Utilities ============================== */
+// ---- Utils ----
 function usd(n: number) {
   return n.toLocaleString(undefined, { style: "currency", currency: "USD" });
 }
@@ -44,9 +38,51 @@ function num(s?: string | number | null) {
 function fmtUnits(n: number, max = 8) {
   return n.toLocaleString(undefined, { maximumFractionDigits: max });
 }
+function labelize(s: string) {
+  return s.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
 
-/* =============================== Page =============================== */
+// ---- Mocking & API ----
+const API_PATH = "/api/onramp/quotes"; // If not implemented, we fall back to mocks
+
+const NETWORKS = [
+  { value: "ethereum", label: "Ethereum" },
+  { value: "solana", label: "Solana" },
+  { value: "xrpl", label: "XRPL (concept)" },
+];
+
+const CURRENCIES = [
+  { value: "usdc", label: "USDC" },
+  { value: "eth", label: "ETH" },
+  { value: "rlusd", label: "RLUSD" },
+];
+
+function makeMockQuotes({ amount, network, currency }: { amount: number; network: string; currency: string }): Quote[] {
+  const base = Math.max(10, Math.min(25000, amount || 200));
+  const fee = (p: number) => Math.max(0.75, base * p);
+  const mixes = [
+    { id: "q_1", netMult: 0.985, nf: 0.007, tf: 0.003 },
+    { id: "q_2", netMult: 0.982, nf: 0.006, tf: 0.004 },
+    { id: "q_3", netMult: 0.987, nf: 0.008, tf: 0.002 },
+    { id: "q_4", netMult: 0.980, nf: 0.009, tf: 0.004 },
+  ];
+  return mixes.map((m) => ({
+    id: `${m.id}_${network}_${currency}_${base}`,
+    destination_network: network,
+    destination_currency: currency,
+    destination_amount: (base * m.netMult).toFixed(currency === "eth" ? 6 : 2),
+    source_total_amount: (base + fee(m.nf) + fee(m.tf)).toFixed(2),
+    fees: {
+      network_fee_monetary: fee(m.nf).toFixed(2),
+      transaction_fee_monetary: fee(m.tf).toFixed(2),
+    },
+  }));
+}
+
+// ---- Page ----
 export default function OnrampPage() {
+  const router = useRouter();
+
   // selectors
   const [sourceAmount, setSourceAmount] = useState<string>("200");
   const [sourceCurrency] = useState<string>("usd");
@@ -77,7 +113,6 @@ export default function OnrampPage() {
         destination_network: destNetwork,
         destination_currency: destCurrency,
       });
-
       const res = await fetch(`${API_PATH}?${params.toString()}`, { cache: "no-store" });
       if (!res.ok) throw new Error(`Quote API ${res.status}`);
       const data = (await res.json()) as { quotes?: Quote[]; data?: Quote[] } | Quote[];
@@ -88,55 +123,49 @@ export default function OnrampPage() {
         : Array.isArray((data as any).data)
         ? (data as any).data
         : [];
-
       if (!list.length) throw new Error("No quotes returned");
       setQuotes(list);
-      console.log(list)
     } catch (err: any) {
-      // Graceful fallback to mock quotes for demo
       console.warn("Quote fetch failed — using mock quotes:", err?.message || err);
-      const mocks = makeMockQuotes({
-        amount: num(sourceAmount),
-        network: destNetwork,
-        currency: destCurrency,
-      });
+      const mocks = makeMockQuotes({ amount: num(sourceAmount), network: destNetwork, currency: destCurrency });
       setQuotes(mocks);
-      setError(
-        "Using mock quotes (couldn't reach your quote API). Wire /api/onramp/quotes to Stripe and this dismisses."
-      );
+      setError("Using mock quotes (couldn't reach your quote API). Wire /api/onramp/quotes to Stripe and this dismisses.");
     } finally {
       setLoading(false);
     }
   }
 
   useEffect(() => {
-    // auto load initial preview
     fetchQuotes();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  function goToConfirm(q: Quote) {
+    const p = new URLSearchParams({
+      id: q.id,
+      network: q.destination_network,
+      currency: q.destination_currency,
+      dest_amount: q.destination_amount,
+      source_total_amount: q.source_total_amount,
+      nf: q.fees?.network_fee_monetary || "",
+      tf: q.fees?.transaction_fee_monetary || "",
+    });
+    router.push(`/onramp/confirm?${p.toString()}`);
+  }
+
   return (
     <main className="relative min-h-[calc(100vh-8rem)] overflow-hidden bg-neutral-950 text-white">
-      {/* Background */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 opacity-60 [mask-image:radial-gradient(ellipse_at_center,black_40%,transparent_60%)]"
-        style={{
-          background:
-            "radial-gradient(1200px_600px_at_80%_-10%, rgba(99,102,241,0.25), transparent 60%), radial-gradient(900px_500px_at_-10%_20%, rgba(34,197,94,0.22), transparent 60%), radial-gradient(700px_400px_at_50%_120%, rgba(244,114,182,0.18), transparent 60%)",
-        }}
-      />
-      <GridLines />
+      <BgDecor />
 
       <section className="relative z-10 mx-auto max-w-7xl px-6 py-10 md:py-14">
         {/* Header */}
         <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">
-          <div>
+          <div className="min-w-0">
             <h1 className="text-balance bg-gradient-to-b from-white via-white to-white/70 bg-clip-text text-3xl font-semibold leading-tight text-transparent md:text-4xl">
               Stablecoin On‑Ramp
             </h1>
             <p className="mt-2 max-w-2xl text-white/70">
-              Compare quotes across networks/currencies, see fees clearly, and kick off your on-ramp in a first-party UI.
+              Compare quotes across networks/currencies, see fees clearly, and kick off your on‑ramp in a first‑party UI.
             </p>
           </div>
           <div className="flex items-center gap-2 text-xs text-white/60">
@@ -152,7 +181,7 @@ export default function OnrampPage() {
             <h2 className="text-lg font-semibold">Request a quote</h2>
             <div className="mt-4 grid gap-4 md:grid-cols-2">
               <Field label="Source amount (USD)">
-                <AmountInput value={sourceAmount} onChange={setSourceAmount} min={0} max={1000000} />
+                <AmountInput value={sourceAmount} onChange={setSourceAmount} min={10} max={25000} />
               </Field>
               <Field label="Destination currency">
                 <Select value={destCurrency} onChange={setDestCurrency} options={CURRENCIES} />
@@ -168,7 +197,7 @@ export default function OnrampPage() {
               <button
                 onClick={fetchQuotes}
                 disabled={loading}
-                className=" cursor-pointer rounded-xl bg-white px-4 py-2 text-sm font-semibold text-black shadow-xl transition hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-70"
+                className="rounded-xl bg-white px-4 py-2 text-sm font-semibold text-black shadow-xl transition hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-70"
               >
                 {loading ? "Fetching quotes…" : "Get quotes"}
               </button>
@@ -195,17 +224,19 @@ export default function OnrampPage() {
               <Stat label="Network" value={labelize(destNetwork)} />
               <Stat label="Asset" value={destCurrency.toUpperCase()} />
             </div>
-            <div className="mt-6">
+            <div className="mt-6 min-w-0">
               <h3 className="text-sm font-medium text-white/80">Selected quote</h3>
               {selected ? (
-                <div className="mt-2 rounded-xl border border-white/10 bg-black/30 p-4">
-                  <div className="flex items-center justify-between gap-4 text-sm">
-                    <div className="flex items-center gap-2">
+                <div className="mt-2 min-w-0 rounded-xl border border-white/10 bg-black/30 p-4">
+                  <div className="flex min-w-0 flex-wrap items-center justify-between gap-2 md:gap-4 text-sm">
+                    <div className="flex min-w-0 flex-wrap items-center gap-2">
                       <Tag>{labelize(selected.destination_network)}</Tag>
                       <Tag>{selected.destination_currency.toUpperCase()}</Tag>
-                      <span className="text-white/70">ID: {selected.id}</span>
+                      <span className="max-w-full truncate text-white/70 md:max-w-none md:truncate-0 break-all">
+                        ID: {selected.id}
+                      </span>
                     </div>
-                    <div className="text-right">
+                    <div className="min-w-0 text-right">
                       <div className="text-white/90">
                         {fmtUnits(num(selected.destination_amount))} {selected.destination_currency.toUpperCase()}
                       </div>
@@ -217,18 +248,19 @@ export default function OnrampPage() {
                     <div className="mt-1 text-right text-xs text-white/60">Effective: {effective.toFixed(2)}%</div>
                   </div>
                   <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-white/70">
-                    <span>
+                    <span className="min-w-0">
                       Network fee: {usd(num(selected.fees?.network_fee_monetary))} • Tx fee: {usd(num(selected.fees?.transaction_fee_monetary))}
                     </span>
-                    <button className="cursor-pointer rounded-lg bg-white px-3 py-1.5 text-sm font-semibold text-black transition hover:bg-white/90">
-                      Start on-ramp
+                    <button
+                      onClick={() => goToConfirm(selected)}
+                      className="rounded-lg bg-white px-3 py-1.5 text-sm font-semibold text-black transition hover:bg-white/90"
+                    >
+                      Start on‑ramp
                     </button>
                   </div>
                 </div>
               ) : (
-                <div className="mt-2 rounded-xl border border-white/10 bg-black/30 p-4 text-sm text-white/60">
-                  No quote selected yet.
-                </div>
+                <div className="mt-2 rounded-xl border border-white/10 bg-black/30 p-4 text-sm text-white/60">No quote selected yet.</div>
               )}
             </div>
           </div>
@@ -240,41 +272,41 @@ export default function OnrampPage() {
             <h2 className="text-lg font-semibold">Available quotes</h2>
             <span className="text-sm text-white/60">{loading ? "…" : `${quotes.length} result${quotes.length === 1 ? "" : "s"}`}</span>
           </div>
-
           {loading ? (
-            <div className="grid gap-3 md:grid-cols-2">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <SkeletonCard key={i} />
-              ))}
-            </div>
+            <div className="grid gap-3 md:grid-cols-2">{Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)}</div>
           ) : (
             <div className="grid gap-3 md:grid-cols-2">
               {quotes.map((q) => (
-                <QuoteCard key={q.id} q={q} selected={selected?.id === q.id} onSelect={() => setSelected(q)} />
+                <QuoteCard key={q.id} q={q} selected={selected?.id === q.id} onSelect={() => setSelected(q)} onContinue={() => goToConfirm(q)} />
               ))}
             </div>
           )}
         </div>
       </section>
 
-      {/* Sticky selection bar */}
+      {/* Sticky selection bar — MOBILE SAFE */}
       {selected && (
-        <div className="fixed inset-x-0 bottom-0 z-20 border-t border-white/10 bg-black/60 backdrop-blur">
-          <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 px-6 py-3 md:flex-row">
-            <div className="flex flex-wrap items-center gap-2 text-sm">
-              <span className="text-white/70">Selected:</span>
-              <Tag>{labelize(selected.destination_network)}</Tag>
-              <Tag>{selected.destination_currency.toUpperCase()}</Tag>
-              <span className="text-white/80">
-                {fmtUnits(num(selected.destination_amount))} {selected.destination_currency.toUpperCase()}
+        <div className="fixed inset-x-0 bottom-0 z-20 border-t border-white/10 bg-black/70 backdrop-blur">
+          <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-4 py-3 md:flex-row md:gap-3">
+            <div className="flex min-w-0 items-center gap-2 overflow-x-auto">
+              <span className="shrink-0 text-xs text-white/70">Selected:</span>
+              <Tag className="shrink-0">{labelize(selected.destination_network)}</Tag>
+              <Tag className="shrink-0">{selected.destination_currency.toUpperCase()}</Tag>
+              <span className="min-w-0 truncate text-xs text-white/80">
+                {fmtUnits(num(selected.destination_amount))} {selected.destination_currency.toUpperCase()} • Cost {usd(num(selected.source_total_amount))}
               </span>
-              <span className="text-white/60">• Cost {usd(num(selected.source_total_amount))}</span>
             </div>
-            <div className="flex items-center gap-2">
-              <button className="cursor-pointer rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-sm font-semibold text-white/90 transition hover:bg-white/10" onClick={() => setSelected(null)}>
+            <div className="flex w-full items-center justify-end gap-2 md:w-auto">
+              <button
+                className="rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-sm font-semibold text-white/90 transition hover:bg-white/10"
+                onClick={() => setSelected(null)}
+              >
                 Clear
               </button>
-              <button className="cursor-pointer rounded-lg bg-white px-4 py-2 text-sm font-semibold text-black transition hover:bg-white/90">
+              <button
+                className="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-black transition hover:bg-white/90"
+                onClick={() => goToConfirm(selected)}
+              >
                 Continue
               </button>
             </div>
@@ -285,7 +317,7 @@ export default function OnrampPage() {
   );
 }
 
-/* ============================= Components ============================= */
+// ---- Components ----
 function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
   return (
     <label className="block text-sm">
@@ -335,24 +367,20 @@ function Select({ value, onChange, options }: { value: string; onChange: (v: str
 }
 
 function ReadOnlyPill({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="inline-flex h-[38px] w-full items-center rounded-lg border border-white/10 bg-black/40 px-3 text-sm text-white/70">
-      {children}
-    </div>
-  );
+  return <div className="inline-flex h-[38px] w-full items-center rounded-lg border border-white/10 bg-black/40 px-3 text-sm text-white/70">{children}</div>;
 }
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-lg border border-white/10 bg-black/30 p-3">
       <div className="text-xs text-white/60">{label}</div>
-      <div className="mt-0.5 text-sm font-medium text-white/90">{value}</div>
+      <div className="mt-0.5 min-w-0 truncate text-sm font-medium text-white/90">{value}</div>
     </div>
   );
 }
 
-function Tag({ children }: { children: React.ReactNode }) {
-  return <span className="rounded-md border border-white/10 bg-white/5 px-2 py-0.5 text-xs">{children}</span>;
+function Tag({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+  return <span className={`rounded-md border border-white/10 bg-white/5 px-2 py-0.5 text-xs ${className}`}>{children}</span>;
 }
 
 function Progress({ value }: { value: number }) {
@@ -381,7 +409,7 @@ function SkeletonCard() {
   );
 }
 
-function QuoteCard({ q, selected, onSelect }: { q: Quote; selected: boolean; onSelect: () => void }) {
+function QuoteCard({ q, selected, onSelect, onContinue }: { q: Quote; selected: boolean; onSelect: () => void; onContinue: () => void }) {
   const net = num(q.destination_amount);
   const gross = num(q.source_total_amount);
   const eff = gross > 0 ? (net / gross) * 100 : 0;
@@ -390,21 +418,17 @@ function QuoteCard({ q, selected, onSelect }: { q: Quote; selected: boolean; onS
 
   return (
     <div
-      className={
-        "relative overflow-hidden rounded-xl border p-4 transition " +
-        (selected
-          ? "border-white/40 bg-white/10 shadow-xl"
-          : "border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10")
-      }
+      className={`relative overflow-hidden rounded-xl border p-4 transition ${selected ? "border-white/40 bg-white/10 shadow-xl" : "border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10"}`}
       onClick={onSelect}
       role="button"
     >
-      <div className="flex items-center justify-between gap-3 text-sm">
-        <div className="flex items-center gap-2">
-          <Tag>{labelize(q.destination_network)}</Tag>
-          <Tag>{q.destination_currency.toUpperCase()}</Tag>
+      <div className="flex min-w-0 items-center justify-between gap-3 text-sm">
+        <div className="flex min-w-0 items-center gap-2">
+          <Tag className="shrink-0">{labelize(q.destination_network)}</Tag>
+          <Tag className="shrink-0">{q.destination_currency.toUpperCase()}</Tag>
+          <span className="hidden min-w-0 truncate text-xs text-white/60 sm:block">{q.id}</span>
         </div>
-        <span className="text-white/60">Eff: {eff.toFixed(2)}%</span>
+        <span className="shrink-0 text-white/60">Eff: {eff.toFixed(2)}%</span>
       </div>
       <div className="mt-2 grid grid-cols-3 items-end gap-3">
         <div>
@@ -418,7 +442,13 @@ function QuoteCard({ q, selected, onSelect }: { q: Quote; selected: boolean; onS
           <div className="text-base font-medium text-white/90">{usd(gross)}</div>
         </div>
         <div className="text-right">
-          <button className="cursor-pointer rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-sm font-semibold text-white/90 transition hover:bg-white/10">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onContinue();
+            }}
+            className="rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-sm font-semibold text-white/90 transition hover:bg-white/10"
+          >
             {selected ? "Selected" : "Choose"}
           </button>
         </div>
@@ -426,61 +456,31 @@ function QuoteCard({ q, selected, onSelect }: { q: Quote; selected: boolean; onS
       <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-white/70">
         <span>Network fee {usd(networkFee)}</span>
         <span>• Tx fee {usd(txFee)}</span>
-        <span>• Quote ID {q.id}</span>
+        <span className="break-all">• {q.id}</span>
       </div>
     </div>
   );
 }
 
-function GridLines() {
+function BgDecor() {
   return (
-    <svg className="pointer-events-none absolute inset-0 -z-10 h-full w-full opacity-[0.08]" aria-hidden>
-      <defs>
-        <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-          <path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" strokeWidth="0.5" />
-        </pattern>
-      </defs>
-      <rect width="100%" height="100%" fill="url(#grid)" />
-    </svg>
+    <>
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 opacity-60 [mask-image:radial-gradient(ellipse_at_center,black_40%,transparent_60%)]"
+        style={{
+          background:
+            "radial-gradient(1200px_600px_at_80%_-10%, rgba(99,102,241,0.25), transparent 60%), radial-gradient(900px_500px_at_-10%_20%, rgba(34,197,94,0.22), transparent 60%), radial-gradient(700px_400px_at_50%_120%, rgba(244,114,182,0.18), transparent 60%)",
+        }}
+      />
+      <svg className="pointer-events-none absolute inset-0 -z-10 h-full w-full opacity-[0.08]" aria-hidden>
+        <defs>
+          <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" strokeWidth="0.5" />
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#grid)" />
+      </svg>
+    </>
   );
-}
-
-function labelize(s: string) {
-  return s.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-}
-
-/* ============================== Mock Data ============================== */
-const NETWORKS = [
-  { value: "ethereum", label: "Ethereum" },
-  { value: "solana", label: "Solana" },
-  { value: "xrpl", label: "XRPL (concept)" },
-];
-
-const CURRENCIES = [
-  { value: "usdc", label: "USDC" },
-  { value: "eth", label: "ETH" },
-  { value: "rlusd", label: "RLUSD" },
-];
-
-function makeMockQuotes({ amount, network, currency }: { amount: number; network: string; currency: string }): Quote[] {
-  const base = Math.max(10, Math.min(25000, amount || 200));
-  // Pseudo fees to make the UI feel realistic
-  const fee = (p: number) => Math.max(0.75, base * p);
-  const mixes = [
-    { id: "q_1", netMult: 0.985, nf: 0.007, tf: 0.003 },
-    { id: "q_2", netMult: 0.982, nf: 0.006, tf: 0.004 },
-    { id: "q_3", netMult: 0.987, nf: 0.008, tf: 0.002 },
-    { id: "q_4", netMult: 0.980, nf: 0.009, tf: 0.004 },
-  ];
-  return mixes.map((m) => ({
-    id: `${m.id}_${network}_${currency}_${base}`,
-    destination_network: network,
-    destination_currency: currency,
-    destination_amount: (base * m.netMult).toFixed(currency === "eth" ? 6 : 2),
-    source_total_amount: (base + fee(m.nf) + fee(m.tf)).toFixed(2),
-    fees: {
-      network_fee_monetary: fee(m.nf).toFixed(2),
-      transaction_fee_monetary: fee(m.tf).toFixed(2),
-    },
-  }));
 }
