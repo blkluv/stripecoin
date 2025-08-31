@@ -1,9 +1,11 @@
+const API_KEY = process.env.STRIPE_SECRET_KEY
+
 export async function stripeREST(
   path: string,
   init: RequestInit & { form?: Record<string, string | undefined | string[]> } = {}
 ) {
   const headers: Record<string, string> = {
-    Authorization: `Bearer sk_test_51S1WY4LXf2zqDfstDgX5xKROtt9CpkelDEGCQvODLu3bd5q9lrmoNyxOoBE4aLfZVi4hbAICPU8V7oSlFI2JlaPb00nDggRt8A`,
+    Authorization: `Bearer ${API_KEY}`,
   };
   let body = init.body as BodyInit | undefined;
 
