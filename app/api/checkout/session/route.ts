@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
     const { name, amount } = parsed.data;
 
 
-     // hard cap + allowlist check — never trust client amounts
+     // hard cap + allowlist check - never trust client amounts
     const ALLOWED = new Set([2000, 5000, 10000]);
     if (!ALLOWED.has(amount)) return NextResponse.json({ error: "Unsupported amount" }, { status: 400 });
 

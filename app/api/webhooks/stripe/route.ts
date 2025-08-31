@@ -33,9 +33,12 @@ export async function POST(req: NextRequest) {
             break;
         }
         case "payment_intent.succeeded": {
-        // optional path if using direct PaymentIntents
-        break;
-    }
+            // optional path if using direct PaymentIntents
+            break;
+        }
+        case "crypto.onramp_session.updated": {
+            break;
+        }
     default:
         break;
     }

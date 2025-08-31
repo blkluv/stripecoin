@@ -1,15 +1,12 @@
-// ====================================================================
-// app/api/checkout/create-intent/route.ts — secure server endpoint
-// ====================================================================
 import { NextRequest } from "next/server";
 import Stripe from "stripe";
 
 // Avoid hard-coding apiVersion to prevent TS mismatch errors across SDK versions.
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
 
-// Very simple in-memory catalog for demo. In prod, read from your DB.
+// Very simple in-memory catalog for demo. In prod, read from a DB.
 const CATALOG: Record<string, { name: string; unit_amount: number }> = {
-  sku_boost: { name: "API Throughput Boost", unit_amount: 100 }, // $12.00
+  sku_boost: { name: "API Throughput Boost", unit_amount: 100 },
   sku_support: { name: "Priority Support (mo)", unit_amount: 500 },
   sku_widget: { name: "Pro Widget", unit_amount: 250 },
 };
@@ -40,7 +37,7 @@ export async function POST(req: NextRequest) {
     const idempotency = req.headers.get("x-idempotency-key") || undefined;
 
     // Try to include Crypto alongside Card. If the account doesn't have Crypto enabled,
-    // fall back to automatic PMs so the demo continues to work.
+    // fall back to automatic PMs
     let intent;
     try {
       intent = await stripe.paymentIntents.create(
@@ -54,7 +51,7 @@ export async function POST(req: NextRequest) {
         idempotency ? { idempotencyKey: idempotency } : undefined
       );
     } catch (err: any) {
-      console.warn("Falling back — crypto not enabled or unsupported:", err?.code || err?.message || err);
+      console.warn("Falling back - crypto not enabled or unsupported:", err?.code || err?.message || err);
       intent = await stripe.paymentIntents.create(
         {
           amount,
@@ -65,7 +62,7 @@ export async function POST(req: NextRequest) {
         },
         idempotency ? { idempotencyKey: idempotency } : undefined
       );
-      return Response.json({ client_secret: intent.client_secret, notice: "Crypto not enabled on this account — showing eligible methods only." });
+      return Response.json({ client_secret: intent.client_secret, notice: "Crypto not enabled on this account - showing eligible methods only." });
     }
 
     return Response.json({ client_secret: intent.client_secret });

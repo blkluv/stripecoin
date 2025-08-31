@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
     form.set("destination_currency", destination_currency);
     form.set("destination_network", destination_network);
     if (wallet_address) {
-        // Attach a per-network wallet (recommended param shape per docs)
+        // Attach a per-network wallet
         form.set(`wallet_addresses[${destination_network}]`, wallet_address);
         form.set("lock_wallet_address", "true");
     }

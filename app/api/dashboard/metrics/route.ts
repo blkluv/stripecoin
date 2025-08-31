@@ -1,7 +1,3 @@
-
-// ====================================================================
-// app/api/dashboard/metrics/route.ts — aggregates recent payments
-// ====================================================================
 import { NextRequest } from "next/server";
 import { stripe } from "@/lib/stripe";
 import type StripeType from "stripe";

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
+import { z, treeifyError } from "zod";
 import { stripe, idempotencyKey } from "@/lib/stripe";
 
 
@@ -9,7 +9,7 @@ const Body = z.object({ account: z.string().startsWith("acct_"), amount: z.numbe
 export async function POST(req: NextRequest) {
     const json = await req.json().catch(() => null);
     const parsed = Body.safeParse(json);
-    if (!parsed.success) return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
+    if (!parsed.success) return NextResponse.json({ error: treeifyError(parsed.error) }, { status: 400 });
 
 
     const { account, amount } = parsed.data;

@@ -42,7 +42,6 @@ export async function GET(req: NextRequest) {
   for (const c of destCurrencies) q.append("destination_currencies[]", c);
   for (const n of destNetworks) q.append("destination_networks[]", n);
 
-  // Correct Stripe endpoint per docs:
   // GET /v1/crypto/onramp/quotes
   const { res, json } = await callStripe("/v1/crypto/onramp/quotes", q);
   if (!res.ok) {
@@ -57,7 +56,7 @@ export async function GET(req: NextRequest) {
     transaction_fee_monetary?: string;
   };
 
-  // Flatten destination_network_quotes map → array (UI-ready)
+  // Flatten destination_network_quotes
   const flattened: Array<{
     id: string;
     destination_network: string;
