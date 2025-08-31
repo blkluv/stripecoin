@@ -10,8 +10,8 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
 // Very simple in‑memory catalog for demo. In prod, read from your DB.
 const CATALOG: Record<string, { name: string; unit_amount: number }> = {
   sku_boost: { name: "API Throughput Boost", unit_amount: 100 }, // $12.00
-  sku_support: { name: "Priority Support (mo)", unit_amount: 2000 },
-  sku_widget: { name: "Pro Widget", unit_amount: 1000 },
+  sku_support: { name: "Priority Support (mo)", unit_amount: 500 },
+  sku_widget: { name: "Pro Widget", unit_amount: 250 },
 };
 
 export async function POST(req: NextRequest) {

@@ -27,7 +27,7 @@ async function callStripe(path: string, search: URLSearchParams) {
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
-  const amount = Number(searchParams.get("amount") ?? 200);
+  const amount = Number(searchParams.get("source_amount") ?? 200);
   const source_amount = fmtAmount(Number.isFinite(amount) ? amount : 200);
 
   const q = new URLSearchParams();

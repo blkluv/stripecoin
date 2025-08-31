@@ -5,6 +5,6 @@ export type CartItem = { id: string; name: string; qty: number; unit_amount: num
 
 export const DEMO_ITEMS: CartItem[] = [
   { id: "sku_boost", name: "API Throughput Boost", qty: 1, unit_amount: 10 },
-  { id: "sku_widget", name: "Pro Widget", qty: 1, unit_amount: 1000 },
+  { id: "sku_support", name: "Priority Support (mo)", qty: 1, unit_amount: 500 },
+  { id: "sku_widget", name: "Pro Widget", qty: 1, unit_amount: 250 },
 ];
-

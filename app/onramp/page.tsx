@@ -91,6 +91,7 @@ export default function OnrampPage() {
 
       if (!list.length) throw new Error("No quotes returned");
       setQuotes(list);
+      console.log(list)
     } catch (err: any) {
       // Graceful fallback to mock quotes for demo
       console.warn("Quote fetch failed — using mock quotes:", err?.message || err);
@@ -135,7 +136,7 @@ export default function OnrampPage() {
               Stablecoin On‑Ramp
             </h1>
             <p className="mt-2 max-w-2xl text-white/70">
-              Compare quotes across networks/currencies, see fees clearly, and kick off your on‑ramp in a first‑party UI.
+              Compare quotes across networks/currencies, see fees clearly, and kick off your on-ramp in a first-party UI.
             </p>
           </div>
           <div className="flex items-center gap-2 text-xs text-white/60">
@@ -151,7 +152,7 @@ export default function OnrampPage() {
             <h2 className="text-lg font-semibold">Request a quote</h2>
             <div className="mt-4 grid gap-4 md:grid-cols-2">
               <Field label="Source amount (USD)">
-                <AmountInput value={sourceAmount} onChange={setSourceAmount} min={1} max={1000000} />
+                <AmountInput value={sourceAmount} onChange={setSourceAmount} min={0} max={1000000} />
               </Field>
               <Field label="Destination currency">
                 <Select value={destCurrency} onChange={setDestCurrency} options={CURRENCIES} />
@@ -167,7 +168,7 @@ export default function OnrampPage() {
               <button
                 onClick={fetchQuotes}
                 disabled={loading}
-                className="rounded-xl bg-white px-4 py-2 text-sm font-semibold text-black shadow-xl transition hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-70"
+                className=" cursor-pointer rounded-xl bg-white px-4 py-2 text-sm font-semibold text-black shadow-xl transition hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-70"
               >
                 {loading ? "Fetching quotes…" : "Get quotes"}
               </button>
@@ -219,8 +220,8 @@ export default function OnrampPage() {
                     <span>
                       Network fee: {usd(num(selected.fees?.network_fee_monetary))} • Tx fee: {usd(num(selected.fees?.transaction_fee_monetary))}
                     </span>
-                    <button className="rounded-lg bg-white px-3 py-1.5 text-sm font-semibold text-black transition hover:bg-white/90">
-                      Start on‑ramp
+                    <button className="cursor-pointer rounded-lg bg-white px-3 py-1.5 text-sm font-semibold text-black transition hover:bg-white/90">
+                      Start on-ramp
                     </button>
                   </div>
                 </div>
@@ -270,10 +271,10 @@ export default function OnrampPage() {
               <span className="text-white/60">• Cost {usd(num(selected.source_total_amount))}</span>
             </div>
             <div className="flex items-center gap-2">
-              <button className="rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-sm font-semibold text-white/90 transition hover:bg-white/10" onClick={() => setSelected(null)}>
+              <button className="cursor-pointer rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-sm font-semibold text-white/90 transition hover:bg-white/10" onClick={() => setSelected(null)}>
                 Clear
               </button>
-              <button className="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-black transition hover:bg-white/90">
+              <button className="cursor-pointer rounded-lg bg-white px-4 py-2 text-sm font-semibold text-black transition hover:bg-white/90">
                 Continue
               </button>
             </div>
@@ -417,7 +418,7 @@ function QuoteCard({ q, selected, onSelect }: { q: Quote; selected: boolean; onS
           <div className="text-base font-medium text-white/90">{usd(gross)}</div>
         </div>
         <div className="text-right">
-          <button className="rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-sm font-semibold text-white/90 transition hover:bg-white/10">
+          <button className="cursor-pointer rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-sm font-semibold text-white/90 transition hover:bg-white/10">
             {selected ? "Selected" : "Choose"}
           </button>
         </div>
