@@ -1,19 +1,20 @@
-import { NextRequest, NextResponse } from "next/server";
+
+import { NextRequest } from "next/server";
 import { stripe } from "@/lib/stripe";
 
-
 export async function POST(req: NextRequest) {
-    const { account } = await req.json();
-    const origin = req.headers.get("origin") ?? process.env.NEXT_PUBLIC_BASE_URL!;
-
-
+  const { accountId } = await req.json();
+  if (!accountId) return Response.json({ error: "Missing accountId" }, { status: 400 });
+  const origin = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  try {
     const link = await stripe.accountLinks.create({
-        account,
-        refresh_url: `${origin}/connect/onboard`,
-        return_url: `${origin}/connect/onboard?complete=1`,
-        type: "account_onboarding",
+      account: accountId,
+      type: "account_onboarding",
+      refresh_url: `${origin}/connect/refresh?account=${accountId}`,
+      return_url: `${origin}/connect/return?account=${accountId}`,
     });
-
-
-    return NextResponse.json({ url: link.url }, { status: 200 });
+    return Response.json({ url: link.url });
+  } catch (e: any) {
+    return Response.json({ error: e.message }, { status: 400 });
+  }
 }

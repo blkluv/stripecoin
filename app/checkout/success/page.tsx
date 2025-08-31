@@ -1,5 +1,5 @@
 // ====================================================================
-// app/checkout/success/page.tsx — post‑redirect thank‑you page
+// app/checkout/success/page.tsx — post-redirect thank-you page
 // ====================================================================
 export const metadata = { title: "Order complete" };
 import Link from "next/link";

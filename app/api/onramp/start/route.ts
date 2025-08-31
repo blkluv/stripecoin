@@ -1,41 +1,42 @@
-// ====================================================================
-// 3) app/api/onramp/start/route.ts — server action to initiate hosted on‑ramp
-//    - If you have an external hosted on‑ramp URL, set NEXT_PUBLIC_ONRAMP_DEMO_URL
-//    - Otherwise returns a simulated next step inside the app
-//    - You can wire your real Stripe On‑ramp create call here when enabled
-// ====================================================================
+// app/api/onramp/start/route.ts --------------------------------------------
 import { NextRequest } from "next/server";
+import { stripeREST } from "@/utils/stripe-rest";
 
+/**
+ * Body: {
+ *   destination_currency: 'usdc' | 'eth' | ...,
+ *   destination_network: 'ethereum' | 'solana' | 'polygon' | 'bitcoin' | 'stellar',
+ *   destination_amount?: string, // mutually exclusive with source_amount
+ *   source_amount?: string,
+ *   wallet_address?: string, // optional: if provided, locks wallet
+ * }
+ */
 export async function POST(req: NextRequest) {
-  try {
-    const body = await req.json();
-    const { id, network, currency, dest_amount, source_total_amount } = body || {};
+  const body = await req.json().catch(() => ({}));
+  const {
+    destination_currency,
+    destination_network,
+    destination_amount,
+    source_amount,
+    wallet_address,
+  } = body || {};
 
-    // If you have a hosted on‑ramp URL (e.g., from Stripe), redirect there
-    const demoUrl = process.env.NEXT_PUBLIC_ONRAMP_DEMO_URL;
-    if (demoUrl) {
-      // Example: append useful context
-      const u = new URL(demoUrl);
-      u.searchParams.set("asset", String(currency || ""));
-      u.searchParams.set("network", String(network || ""));
-      u.searchParams.set("amount", String(dest_amount || ""));
-      return Response.json({ url: u.toString() });
-    }
-
-    // TODO: Wire real Stripe On‑ramp session creation when enabled for your account.
-    // Pseudo-code (avoid TS error `property 'crypto' does not exist on type 'Stripe'`):
-    // const session = await (stripe as any).crypto.onramp.sessions.create({
-    //   destination_currency: currency,
-    //   destination_network: network,
-    //   destination_amount: dest_amount,
-    //   // ...your customer context...
-    // });
-    // return Response.json({ url: session?.url });
-
-    // Fallback to simulated flow inside the app so the button actually does something
-    const params = new URLSearchParams({ currency, network, amount: dest_amount });
-    return Response.json({ next: `/onramp/simulated?${params.toString()}` });
-  } catch (e: any) {
-    return Response.json({ error: e?.message || "server error" }, { status: 400 });
+  const form: Record<string, string | string[] | undefined> = {};
+  if (destination_currency) form["destination_currency"] = destination_currency;
+  if (destination_network) form["destination_network"] = destination_network;
+  if (destination_amount) form["destination_amount"] = destination_amount;
+  if (source_amount) form["source_amount"] = source_amount;
+  // Optional: lock wallet address for this session
+  if (wallet_address && destination_network) {
+    form[`wallet_addresses[${destination_network}]`] = wallet_address;
+    form["lock_wallet_address"] = "true";
   }
+  // You can pre-fill KYC-friendly hints
+  form["source_currency"] = form["source_currency"] || "usd";
+
+  const resp = (await stripeREST("/v1/crypto/onramp_sessions", {
+    method: "POST",
+    form,
+  })) as Response;
+  return resp; // contains {id, client_secret, redirect_url?, transaction_details...}
 }

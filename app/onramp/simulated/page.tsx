@@ -1,6 +1,6 @@
 // ====================================================================
-// 4) app/onramp/simulated/page.tsx — simple in‑app simulator
-//    - Lets you demo the flow end‑to‑end even without account on‑ramp access
+// 4) app/onramp/simulated/page.tsx — simple in-app simulator
+//    - Lets you demo the flow end-to-end even without account on-ramp access
 // ====================================================================
 "use client";
 
@@ -19,9 +19,9 @@ export default function SimulatedOnrampPage() {
   return (
     <main className="relative min-h-[calc(100vh-8rem)] bg-neutral-950 text-white">
       <div className="mx-auto max-w-md px-6 py-14 text-center">
-        <h1 className="text-2xl font-semibold">Simulated On‑Ramp</h1>
+        <h1 className="text-2xl font-semibold">Simulated On-Ramp</h1>
         <p className="mt-2 text-white/70">
-          This sim pretends to complete a hosted on‑ramp for {amount} {currency} on {network}.
+          This sim pretends to complete a hosted on-ramp for {amount} {currency} on {network}.
         </p>
         <div className="mt-6">
           <button
@@ -33,7 +33,7 @@ export default function SimulatedOnrampPage() {
             disabled={busy}
             className="rounded-xl bg-white px-4 py-2 text-sm font-semibold text-black shadow-xl transition hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-70"
           >
-            {busy ? "Completing…" : "Complete on‑ramp"}
+            {busy ? "Completing…" : "Complete on-ramp"}
           </button>
         </div>
         <div className="mt-3">

@@ -4,10 +4,10 @@
 import { NextRequest } from "next/server";
 import Stripe from "stripe";
 
-// Avoid hard‑coding apiVersion to prevent TS mismatch errors across SDK versions.
+// Avoid hard-coding apiVersion to prevent TS mismatch errors across SDK versions.
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
 
-// Very simple in‑memory catalog for demo. In prod, read from your DB.
+// Very simple in-memory catalog for demo. In prod, read from your DB.
 const CATALOG: Record<string, { name: string; unit_amount: number }> = {
   sku_boost: { name: "API Throughput Boost", unit_amount: 100 }, // $12.00
   sku_support: { name: "Priority Support (mo)", unit_amount: 500 },

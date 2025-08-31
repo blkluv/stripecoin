@@ -23,12 +23,12 @@ export default function Home() {
             Ship stablecoin experiences that feel native to your product
           </h1>
           <p className="mt-4 text-pretty text-base leading-relaxed text-white/70 md:text-lg">
-            This demo uses Next.js (App Router) and Tailwind to showcase on‑ramp quotes, checkout concepts, and webhook
-            handling patterns. Clean UI, safe defaults, and production‑ready structure.
+            This demo uses Next.js (App Router) and Tailwind to showcase on-ramp quotes, checkout concepts, and webhook
+            handling patterns. Clean UI, safe defaults, and production-ready structure.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <CTA href="/onramp" primary>
-              Try On‑Ramp
+              Try On-Ramp
             </CTA>
             <CTA href="/checkout">Checkout (preview)</CTA>
             <CTA href="/docs">Docs (project)</CTA>
@@ -47,7 +47,7 @@ export default function Home() {
                 <WindowDot className="bg-emerald-500" />
                 <span className="ml-3">app/api/webhooks/route.ts — idempotent handler</span>
               </div>
-              <span className="hidden md:block">TypeScript • Edge‑safe • Retries</span>
+              <span className="hidden md:block">TypeScript • Edge-safe • Retries</span>
             </div>
             <CodeBlock code={CODE_WEBHOOK} />
           </div>
@@ -65,12 +65,12 @@ export default function Home() {
         <div className="mt-8 grid gap-5 md:grid-cols-3">
           <FeatureCard
             title="Instant quotes"
-            body="Fetch stablecoin on‑ramp quotes, map fees, and highlight net received amounts with clear UX."
+            body="Fetch stablecoin on-ramp quotes, map fees, and highlight net received amounts with clear UX."
             href="/onramp"
             icon={<IconBolt />}
           />
           <FeatureCard
-            title="First‑party checkout"
+            title="First-party checkout"
             body="Demonstrates a custom checkout surface with server actions, avoiding brittle client secrets."
             href="/checkout"
             icon={<IconCart />}
@@ -252,7 +252,7 @@ export async function POST(req: NextRequest) {
   return Response.json({ ok: true });
 }
 
-// ——— helpers (server‑only) ———
+// ——— helpers (server-only) ———
 function verifyStripeSignature(raw: string, sig: string | null) {
   if (!sig) throw new Error("Missing signature");
   // stripe.webhooks.constructEvent(raw, sig, process.env.STRIPE_WEBHOOK_SECRET!)

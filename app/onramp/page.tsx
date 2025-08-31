@@ -1,9 +1,3 @@
-// ====================================================================
-// 1) app/onramp/page.tsx — MOBILE FIXES + ACTION HOOKS
-//    - Fixes sticky bar overflow on small screens (chips scroll, min-w-0, truncation)
-//    - Long IDs wrap/truncate
-//    - Buttons now route to /onramp/confirm with the selected quote details
-// ====================================================================
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
@@ -162,10 +156,10 @@ export default function OnrampPage() {
         <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">
           <div className="min-w-0">
             <h1 className="text-balance bg-gradient-to-b from-white via-white to-white/70 bg-clip-text text-3xl font-semibold leading-tight text-transparent md:text-4xl">
-              Stablecoin On‑Ramp
+              Stablecoin On-Ramp
             </h1>
             <p className="mt-2 max-w-2xl text-white/70">
-              Compare quotes across networks/currencies, see fees clearly, and kick off your on‑ramp in a first‑party UI.
+              Compare quotes across networks/currencies, see fees clearly, and kick off your on-ramp in a first-party UI.
             </p>
           </div>
           <div className="flex items-center gap-2 text-xs text-white/60">
@@ -255,7 +249,7 @@ export default function OnrampPage() {
                       onClick={() => goToConfirm(selected)}
                       className="rounded-lg bg-white px-3 py-1.5 text-sm font-semibold text-black transition hover:bg-white/90"
                     >
-                      Start on‑ramp
+                      Start on-ramp
                     </button>
                   </div>
                 </div>

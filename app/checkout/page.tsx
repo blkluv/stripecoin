@@ -1,5 +1,5 @@
 // ====================================================================
-// app/checkout/page.tsx — First‑party checkout UI (Payment Element)
+// app/checkout/page.tsx — First-party checkout UI (Payment Element)
 // ====================================================================
 "use client";
 
@@ -86,7 +86,7 @@ export default function CheckoutPage() {
             <h1 className="text-balance bg-gradient-to-b from-white via-white to-white/70 bg-clip-text text-3xl font-semibold leading-tight text-transparent md:text-4xl">
               Checkout
             </h1>
-            <p className="mt-2 max-w-2xl text-white/70">First‑party checkout with Stripe Payment Element — includes a Crypto option when your account is enabled.</p>
+            <p className="mt-2 max-w-2xl text-white/70">First-party checkout with Stripe Payment Element — includes a Crypto option when your account is enabled.</p>
           </div>
           <Link
             href="/"
@@ -132,7 +132,7 @@ export default function CheckoutPage() {
 
             {/* Soft hint if crypto isn't enabled */}
             <div className="mt-4 text-xs text-white/50">
-              If you don’t see “Pay with Crypto” inside the Payment box, the Crypto payment method isn’t enabled on your account.
+              If you do not see “Pay with Crypto” inside the Payment box, the Crypto payment method is not enabled on your account.
             </div>
           </div>
 
