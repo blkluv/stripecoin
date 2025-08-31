@@ -2,47 +2,46 @@ import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { stripe } from "@/lib/stripe";
 
+export const runtime = "nodejs";
 
-export const runtime = "nodejs"; // ensure Node runtime for raw body
-
+type OnrampEventType = Stripe.Event.Type | "crypto.onramp_session_updated";
 
 export async function POST(req: NextRequest) {
-    const sig = req.headers.get("stripe-signature");
-    if (!sig) return NextResponse.json({ error: "Missing signature" }, { status: 400 });
+  const sig = req.headers.get("stripe-signature");
+  if (!sig) return NextResponse.json({ error: "Missing signature" }, { status: 400 });
 
+  const raw = await req.text();
 
-    const raw = await req.text(); // get untouched body
+  let event: Stripe.Event;
+  try {
+    event = stripe.webhooks.constructEvent(raw, sig, process.env.STRIPE_WEBHOOK_SECRET!);
+  } catch (err: any) {
+    return NextResponse.json({ error: `Webhook Error: ${err.message}` }, { status: 400 });
+  }
 
+  const type = event.type as OnrampEventType;
 
-    let event: Stripe.Event;
-    try {
-        event = stripe.webhooks.constructEvent(
-            raw,
-            sig,
-            process.env.STRIPE_WEBHOOK_SECRET as string
-        );
-    } catch (err: any) {
-        return NextResponse.json({ error: `Webhook Error: ${err.message}` }, { status: 400 });
+  switch (type) {
+    case "checkout.session.completed": {
+      const session = event.data.object as Stripe.Checkout.Session;
+      // mark order paid, etc.
+      break;
     }
-
-
-    switch (event.type) {
-        case "checkout.session.completed": {
-            const session = event.data.object as Stripe.Checkout.Session;
-            // TODO: mark order paid in DB, grant access, etc.
-            break;
-        }
-        case "payment_intent.succeeded": {
-            // optional path if using direct PaymentIntents
-            break;
-        }
-        case "crypto.onramp_session.updated": {
-            break;
-        }
+    case "payment_intent.succeeded": {
+      // direct PI path
+      break;
+    }
+    case "crypto.onramp_session_updated": {
+      // Shape is CryptoOnrampSession (not in Stripe types yet).
+      const onramp = event.data.object as any;
+      // e.g. onramp.status { initialized, rejected, requires_payment, fulfillment_processing, fulfillment_complete }
+      // handle status transitions, persist, etc.
+      break;
+    }
     default:
-        break;
-    }
+      // ignore other events
+      break;
+  }
 
-
-    return NextResponse.json({ received: true }, { status: 200 });
+  return NextResponse.json({ received: true }, { status: 200 });
 }
