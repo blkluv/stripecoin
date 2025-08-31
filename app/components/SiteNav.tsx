@@ -10,7 +10,7 @@ const navLinks = [
   { href: "/", label: "Home" },
   { href: "/onramp", label: "On-Ramp" },
   { href: "/checkout", label: "Checkout" },
-  { href: "/webhooks", label: "Webhooks" },
+/*   { href: "/webhooks", label: "Webhooks" }, */
   { href: "/dashboard", label: "Dashboard" },
 ];
 

@@ -30,8 +30,8 @@ export default function Home() {
             <CTA href="/onramp" primary>
               Try On-Ramp
             </CTA>
-            <CTA href="/checkout">Checkout (preview)</CTA>
-            <CTA href="/docs">Docs (project)</CTA>
+            <CTA href="/checkout">Try Checkout</CTA>
+{/*             <CTA href="/docs">Docs (project)</CTA> */}
           </div>
 
           <TechBadges />
@@ -78,7 +78,7 @@ export default function Home() {
           <FeatureCard
             title="Robust webhooks"
             body="Idempotency keys, replay protection, and deterministic state transitions for money movement."
-            href="/webhooks"
+            href="/"
             icon={<IconShield />}
           />
         </div>
