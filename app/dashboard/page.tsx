@@ -102,8 +102,8 @@ export default function DashboardPage() {
         </div>
 
         {/* Trend + breakdown */}
-        <div className="mt-6 grid gap-6 md:grid-cols-[1.2fr_0.8fr]">
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
+        {/* <div className="mt-6 grid gap-6 md:grid-cols-[1.2fr_0.8fr]"> */}
+{/*           <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold">Daily volume</h2>
               <span className="text-xs text-white/60">{data ? `${data.series.length} days` : "—"}</span>
@@ -111,9 +111,9 @@ export default function DashboardPage() {
             <div className="mt-4">
               {data ? <BarChart points={data.series} max={dailyMax} /> : <ChartSkeleton />}
             </div>
-          </div>
+          </div> */}
 
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-5 mt-5">
             <h2 className="text-lg font-semibold">Breakdown</h2>
             {data ? (
               <div className="mt-3 space-y-3 text-sm">
@@ -139,7 +139,7 @@ export default function DashboardPage() {
               <div className="mt-4 text-sm text-white/60">Loading…</div>
             )}
           </div>
-        </div>
+{/*         </div> */}
 
         {/* Recent payments table */}
         <div className="mt-6 rounded-2xl border border-white/10 bg-white/5 p-5">
