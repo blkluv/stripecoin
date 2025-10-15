@@ -5,9 +5,9 @@ import SiteFooter from "./components/SiteFooter";
 
 
 export const metadata: Metadata = {
-  title: "Stripe Stablecoin Starter — Demo",
+  title: "Stripe Stablecoin Starter",
   description:
-  "A polished Next.js + Tailwind demo showcasing Stripe stablecoin onramp, checkout concepts, and webhook handling.",
+  "A polished demo showcasing Stripe stablecoin onramp, checkout concepts, and webhook handling.",
 };
 
 
