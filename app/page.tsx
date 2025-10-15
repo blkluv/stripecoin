@@ -23,7 +23,7 @@ export default function Home() {
             Ship stablecoin experiences that feel native to your product
           </h1>
           <p className="mt-4 text-pretty text-base leading-relaxed text-white/70 md:text-lg">
-            This demo uses Next.js (App Router) and Tailwind to showcase on-ramp quotes, checkout concepts, and webhook
+            Stablecoin showcases on-ramp quotes, checkout concepts, and webhook
             handling patterns. Clean UI, safe defaults, and production-ready structure.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
@@ -56,9 +56,9 @@ export default function Home() {
 
       {/* FEATURES */}
       <section className="relative z-10 mx-auto max-w-7xl px-6 pb-12 md:pb-20">
-        <h2 className="text-balance text-center text-2xl font-semibold md:text-3xl">What this repo demonstrates</h2>
+        <h2 className="text-balance text-center text-2xl font-semibold md:text-3xl">What Stablecoin. demonstrates</h2>
         <p className="mx-auto mt-2 max-w-3xl text-center text-white/70">
-          Opinionated patterns you can lift directly into production. Swap the demo surfaces for your actual product
+          Opinionated patterns you can lift directly into production. Swap the Stablecoin. surfaces for your actual product
           flows.
         </p>
 
