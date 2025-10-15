@@ -41,7 +41,7 @@ export default function SiteNav() {
             <LogoMark />
           </Link>
           <Link href="/" className="flex items-center gap-3 rounded focus:outline-none focus:ring-2 focus:ring-white/50">
-            <span className="text-lg font-semibold tracking-tight">Stablecoin Commerce</span>
+            <span className="text-lg font-semibold tracking-tight">STABLECOIN.HAHZ.LIVE</span>
             <span className="rounded-full border border-white/10 text-center px-2 py-0.5 text-xs text-white/70">Stripe demo</span>
           </Link>
         </div>
@@ -53,11 +53,11 @@ export default function SiteNav() {
           ))}
           <a
             className="ml-2 rounded-lg border border-white/15 px-3 py-1.5 text-sm text-white/80 transition hover:bg-white/5"
-            href="https://github.com/gunnerhowe/stripe-stablecoin-app"
+            href="https://linkedin.com/in/hahzterry"
             target="_blank"
             rel="noreferrer"
           >
-            GitHub
+            Linkedin
           </a>
         </div>
 
